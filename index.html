@@ -40,89 +40,94 @@
   </style>
 </head>
 <body>
-  <h1>You Can Only Play Once - Tic Tac Toe</h1>
-  <div class="grid" id="grid"></div>
-  <p id="result"></p>
 
-  <script>
-    const grid = document.getElementById('grid');
-    const result = document.getElementById('result');
-    let board = ['', '', '', '', '', '', '', '', ''];
-    let currentPlayer = 'X';
-    let gameOver = false;
+<h1>You Can Only Play Once - Tic Tac Toe</h1>
+<div class="grid" id="grid"></div>
+<p id="result"></p>
 
-    // Create the grid
-    for (let i = 0; i < 9; i++) {
-      const cell = document.createElement('div');
-      cell.dataset.index = i;
-      grid.appendChild(cell);
-      cell.addEventListener('click', handlePlayerMove);
+<script>
+  const grid = document.getElementById('grid');
+  const result = document.getElementById('result');
+  let board = ['', '', '', '', '', '', '', '', ''];
+  let currentPlayer = 'X';
+  let gameOver = false;
+
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.dataset.index = i;
+    grid.appendChild(cell);
+    cell.addEventListener('click', handlePlayerMove);
+  }
+
+  function handlePlayerMove(event) {
+    if (gameOver) return;
+
+    const index = event.target.dataset.index;
+    if (board[index] !== '') return;
+
+    board[index] = 'X';
+    event.target.textContent = 'X';
+    event.target.classList.add('clicked');
+
+    if (checkWinner('X')) {
+      endGame();
+      return;
     }
 
-    // Handle player's move
-    function handlePlayerMove(event) {
-      if (gameOver) return;
+    aiMove();
+  }
 
-      const index = event.target.dataset.index;
-      if (board[index] !== '') return; // If cell is already filled
+  function aiMove() {
+    let emptyCells = board
+      .map((v, i) => v === '' ? i : null)
+      .filter(v => v !== null);
 
-      board[index] = currentPlayer;
-      event.target.textContent = currentPlayer;
-      event.target.classList.add('clicked');
-
-      if (checkWinner(currentPlayer)) {
-        result.textContent = `${currentPlayer} wins!`;
-        gameOver = true;
-        return;
-      }
-
-      // AI's turn
-      currentPlayer = 'O';
-      aiMove();
+    if (emptyCells.length === 0) {
+      endGame();
+      return;
     }
 
-    // AI makes its move
-    function aiMove() {
-      if (gameOver) return;
+    const aiChoice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    board[aiChoice] = 'O';
+    const aiCell = document.querySelector(`[data-index="${aiChoice}"]`);
+    aiCell.textContent = 'O';
+    aiCell.classList.add('clicked');
 
-      let emptyCells = board.map((val, index) => val === '' ? index : null).filter(val => val !== null);
-      if (emptyCells.length === 0) {
-        result.textContent = 'It\'s a tie!';
-        gameOver = true;
-        return;
-      }
-
-      const aiChoice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      board[aiChoice] = 'O';
-      const aiCell = document.querySelector(`[data-index="${aiChoice}"]`);
-      aiCell.textContent = 'O';
-      aiCell.classList.add('clicked');
-
-      if (checkWinner('O')) {
-        result.textContent = 'AI wins!';
-        gameOver = true;
-      } else {
-        currentPlayer = 'X'; // Player's turn
-      }
+    if (checkWinner('O')) {
+      endGame();
     }
+  }
 
-    // Check if a player has won
-    function checkWinner(player) {
-      const winningCombos = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6]
-      ];
+  function checkWinner(player) {
+    const wins = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return wins.some(combo => combo.every(i => board[i] === player));
+  }
 
-      return winningCombos.some(combo => {
-        return combo.every(index => board[index] === player);
-      });
-    }
-  </script>
+  function endGame() {
+    gameOver = true;
+
+    document.body.innerHTML = `
+      <div style="
+        background:black;
+        color:#064e3b;
+        height:100vh;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        font-family:Arial, sans-serif;
+        text-align:center;
+      ">
+        <h1>I hope you won...</h1>
+        <p>You are not allowed to play from it again</p>
+      </div>
+    `;
+  }
+</script>
+
 </body>
 </html>
