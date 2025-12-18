@@ -36,105 +36,93 @@
     #result {
       font-size: 24px;
       font-weight: bold;
-      margin-bottom: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
-  <h1>You Can Only Play Once</h1>
+  <h1>You Can Only Play Once - Tic Tac Toe</h1>
   <div class="grid" id="grid"></div>
   <p id="result"></p>
-  <button onclick="resetGame()">Reset Game</button>
 
   <script>
     const grid = document.getElementById('grid');
     const result = document.getElementById('result');
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let gameOver = false;
 
-    let board;
-    let currentPlayer;
-    let gameOver;
-
-    function initGame() {
-      board = ['', '', '', '', '', '', '', '', ''];
-      currentPlayer = 'X';
-      gameOver = false;
-      result.textContent = '';
-      grid.innerHTML = '';
-
-      for (let i = 0; i < 9; i++) {
-        const cell = document.createElement('div');
-        cell.dataset.index = i;
-        cell.addEventListener('click', handlePlayerMove);
-        grid.appendChild(cell);
-      }
+    // Create the grid
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.dataset.index = i;
+      grid.appendChild(cell);
+      cell.addEventListener('click', handlePlayerMove);
     }
 
-    function handlePlayerMove(e) {
+    // Handle player's move
+    function handlePlayerMove(event) {
       if (gameOver) return;
 
-      const index = e.target.dataset.index;
-      if (board[index] !== '') return;
+      const index = event.target.dataset.index;
+      if (board[index] !== '') return; // If cell is already filled
 
-      board[index] = 'X';
-      e.target.textContent = 'X';
-      e.target.classList.add('clicked');
+      board[index] = currentPlayer;
+      event.target.textContent = currentPlayer;
+      event.target.classList.add('clicked');
 
-      if (checkWinner('X')) {
-        result.textContent = 'You win!';
+      if (checkWinner(currentPlayer)) {
+        result.textContent = `${currentPlayer} wins!`;
         gameOver = true;
         return;
       }
 
+      // AI's turn
+      currentPlayer = 'O';
       aiMove();
     }
 
+    // AI makes its move
     function aiMove() {
-      let emptyCells = board
-        .map((v, i) => v === '' ? i : null)
-        .filter(v => v !== null);
+      if (gameOver) return;
 
+      let emptyCells = board.map((val, index) => val === '' ? index : null).filter(val => val !== null);
       if (emptyCells.length === 0) {
-        result.textContent = "It's a tie!";
+        result.textContent = 'It\'s a tie!';
         gameOver = true;
         return;
       }
 
-      const choice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      board[choice] = 'O';
-
-      const cell = document.querySelector(`[data-index="${choice}"]`);
-      cell.textContent = 'O';
-      cell.classList.add('clicked');
+      const aiChoice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      board[aiChoice] = 'O';
+      const aiCell = document.querySelector(`[data-index="${aiChoice}"]`);
+      aiCell.textContent = 'O';
+      aiCell.classList.add('clicked');
 
       if (checkWinner('O')) {
         result.textContent = 'AI wins!';
         gameOver = true;
+      } else {
+        currentPlayer = 'X'; // Player's turn
       }
     }
 
+    // Check if a player has won
     function checkWinner(player) {
-      const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
+      const winningCombos = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
       ];
-      return wins.some(combo =>
-        combo.every(i => board[i] === player)
-      );
-    }
 
-    function resetGame() {
-      initGame();
+      return winningCombos.some(combo => {
+        return combo.every(index => board[index] === player);
+      });
     }
-
-    initGame();
   </script>
-
 </body>
 </html>
